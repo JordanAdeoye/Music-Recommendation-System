@@ -1,15 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-
-
-
-# In[12]:
-
-
 import os
 import base64
 import requests
@@ -23,10 +11,7 @@ client_secret = os.environ['CLIENT_SECRET']
 # https://accounts.spotify.com/authorize?client_id=8879a6eab24f4834bc2b132380e37127&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000&scope=user-follow-read user-follow-modify
 
 
-# The function below get use the Access Token
-
-# In[1016]:
-
+# The function below gets us the Access Token
 
 def get_token():
     auth_string = client_id + ":" + client_secret
@@ -56,9 +41,6 @@ def get_auth_header(token):
 
 # The function below gets you the authorization token so you can have access to a user spotify account
 
-# In[925]:
-
-
 def get_authorization():
     auth_string = client_id + ":" + client_secret
     auth_bytes = auth_string.encode('utf-8')
@@ -86,14 +68,6 @@ def get_authorization():
 def get_auth_headerauth(authorized):
     return {"Authorization": "Bearer " + authorized}
 
-
-# In[ ]:
-
-
-
-
-
-# In[1306]:
 
 
 from requests.exceptions import ConnectionError
@@ -189,20 +163,12 @@ def search(token,track,artist):
     return json_result
 
 
-# In[1350]:
-
-
 authorized = get_authorization()
 token = get_token()
-# print(authorized)
-# print('\n')
-# print(token)
+
 
 
 # The function below will get the artists i'm following on spotify, and since i can only get 20 artists in one function call( get_following(authorized) ) , i store the 20 artist and thier unique id in a dictionary each and then append to a list and delete them from my following on spotify then  interate this proccess until i have all the artists i'm following,after storing all the dictionary of artist i'm following in a list, i loop over the list using another function( follow(authorized,ids) ) to follow each artist back in my stopify so it doesn't affect my spotify account, after that i call a function( related_artist(token,ids) ) to get related artist for each artist in the name list and at the end of the function remove duplicates from the list and store list of artist in a json file
-
-# In[928]:
-
 
 def store_delete_related(authorized,token):
     name = []    
@@ -235,14 +201,7 @@ def store_delete_related(authorized,token):
    
 list_artists = store_delete_related(authorized,token)
 
-
-# In[1378]:
-
-
 list_artists[:10]
-
-
-# In[ ]:
 
 
 # Plan is to get each artist albums 
@@ -253,10 +212,7 @@ list_artists[:10]
 # Training with a clustering algorithm 
 
 
-# The function below interates over the list of artist and get all thier albums, the interate over each song in each album and calls two important functions ( get_track_analysis(token,ids) & get_track_features(token,ids) ), what these functions does is provide unique features about each song, which we use to to create a pandas dataframe 
-
-# In[1368]:
-
+# The function below iterates over the list of artist and get all thier albums, then iterate over each song in each album and calls two important functions ( get_track_analysis(token,ids) & get_track_features(token,ids) ), what these functions does is provide unique features about each song, which we use to to create a pandas dataframe 
 
 def get_artists_songs_analysis(token):
     info = []
@@ -294,16 +250,11 @@ def get_artists_songs_analysis(token):
 data = get_artists_songs_analysis(token)
 
 
-# In[ ]:
-
-
 df = pd.DataFrame(data)
 df
 
 
-# The function below interates over the list of artist ang gets their top songs, then interate over each artist songs and calls two important functions ( get_track_analysis(token,ids) & get_track_features(token,ids) ), what these functions does is provide unique features about each song, which we use to to create a pandas dataframe
-
-# In[1369]:
+# The function below iterates over the list of artist ang gets their top songs, then iterate over each artist songs and calls two important functions ( get_track_analysis(token,ids) & get_track_features(token,ids) ), what these functions does is provide unique features about each song, which we use to to create a pandas dataframe
 
 
 token = get_token()
@@ -345,48 +296,22 @@ data = get_artists_top_songs_analysis(token)
 
 # Create a dataframe and shuffle the rows
 
-# In[1419]:
-
-
 df = pd.DataFrame(data)
 df = df.sample(frac=1)
-df.head(10)
+print(df.head(10))
 
 
 # Get the columns of the dataframe cause some of the feature are redundant and need to be deleted
 
-# In[1420]:
-
-
-df.columns
-
+print(df.columns)
 
 # Rename the id to track id and deleting redundant columns
-
-# In[1421]:
-
 
 df.rename(columns={'id':'track_id'},inplace=True)
 df.drop(columns=['uri','track_href','analysis_url','type','offset_seconds','window_seconds','sample_md5','analysis_sample_rate','analysis_channels','rhythm_version','rhythmstring','codestring','synch_version','synchstring','code_version','echoprint_version','echoprintstring'],inplace=True)
 
 
-# In[1422]:
-
-
-df.columns
-
-
-# In[1092]:
-
-
-# df = df[['artist', 'artist_id', 'album_name', 'album_id','track_name','song_id',
-#        'num_samples', 'duration', 'end_of_fade_in', 'start_of_fade_out',
-#        'loudness', 'tempo', 'tempo_confidence', 'time_signature',
-#        'time_signature_confidence', 'key', 'key_confidence', 'mode',
-#        'mode_confidence', 'danceability', 'energy', 'speechiness',
-#        'acousticness', 'instrumentalness', 'liveness', 'valence',
-#        'duration_ms']]
-
+print(df.columns)
 
 # # Training the Clustering algorithm
 
@@ -404,9 +329,6 @@ from sklearn.mixture import GaussianMixture
 
 # Since in the dataframe we have the name of the artist and the artist_id and some other information about each song which will obviously not help in traing a clustering algorithm but are useful for humans to identify each song caus e i can't identify a song by, say liveness, acousticness or instrumentalness. that why i create the train_column variable
 
-# In[1418]:
-
-
 train_column = ['num_samples', 'duration', 'end_of_fade_in', 'start_of_fade_out',
        'loudness', 'tempo', 'tempo_confidence', 'time_signature',
        'time_signature_confidence', 'key', 'key_confidence', 'mode',
@@ -414,23 +336,11 @@ train_column = ['num_samples', 'duration', 'end_of_fade_in', 'start_of_fade_out'
        'acousticness', 'instrumentalness', 'liveness', 'valence',
        'duration_ms']
 
-
-# In[1436]:
-
-
 X_train,X_test = train_test_split(df,test_size=0.1)
-
-
-# In[1437]:
-
-
-X_train
+print(X_train)
 
 
 # One way to evaluate a kmeans algorithm to find a good number of clusters to find the data is using the silhouette score
-
-# In[1440]:
-
 
 silhouette_scores = []
 for k in range(400,550):
@@ -438,42 +348,15 @@ for k in range(400,550):
     clus.fit(X_train[train_column])
     silhouette_scores.append(silhouette_score(X_train[train_column],clus.labels_))
 
-
-# In[1441]:
-
-
-# fig,ax = plt.figure()
 plt.plot(range(400,550),silhouette_scores)
 plt.grid(True)
 plt.show()
-# 406
-
-
-# In[1448]:
-
 
 silhouette_scoress = []
 for k in range(440,450):
     cluss = KMeans(n_clusters=k,random_state=42)
     cluss.fit(X_train[train_column])
     print("silhoutte_score: "+str(silhouette_score(X_train[train_column],cluss.labels_))+" number of clusters: "+str(k))
-#     silhouette_scoress.append(silhouette_score(X_train[train_column],cluss.labels_))
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[1449]:
 
 
 kmeans = KMeans(n_clusters=443,random_state=42)
@@ -481,9 +364,6 @@ kmeans.fit(X_train[train_column])
 
 
 # Code below takes input for song name and artist name and check spotify for the song, it returns multiple songs similar to your search and for each song we call two important functions ( get_track_analysis(token,ids) & get_track_features(token,ids) ), what these functions does is provide unique features about each song , we store it in a dataframe and remove the redundant features like we did earlier
-
-# In[1457]:
-
 
 song_nameee = input('Name of song(case-sensitive): ')
 artist_nameee = input('Name of artist(case-sensitive): ')
@@ -509,79 +389,15 @@ df1 = pd.DataFrame(your_info)
 df1.rename(columns={'id':'track_id'},inplace=True)
 df1.drop(columns=['uri','track_href','analysis_url','type','offset_seconds','window_seconds','sample_md5','analysis_sample_rate','analysis_channels','rhythm_version','rhythmstring','codestring','synch_version','synchstring','code_version','echoprint_version','echoprintstring'],inplace=True)
 
-
-# In[1458]:
-
-
-df1.head(5)
+print(df1.head(5))
 
 
 # We select a particular song we want to to predict what cluster the belong to
-
-# In[1459]:
-
 
 kmeans.predict([df1[train_column].iloc[0]])
 
 
 # we now return songs in the cluster the particular song we searched for  belongs to
 
-# In[1460]:
-
-
 X_train[kmeans.predict(X_train[train_column])==int(kmeans.predict([df1[train_column].iloc[1]]))]
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-# gau_silhouette_scores = []
-# for k in range(100,550):
-#     gm = GaussianMixture(n_components=200)
-#     gm.fit(X_train[train_column])
-#     gau_silhouette_scores.append(silhouette_score(X_train[train_column],gm.predict(X_train[train_column])))
-
-
-# In[1413]:
-
-
-# plt.plot(range(100,550),gau_silhouette_scores)
-# plt.grid(True)
-# plt.show()
-
-
-# In[ ]:
-
-
-
 
